@@ -29,6 +29,7 @@ impl<'a> TryRead<'a> for MapChunk {
         let max_x: i32 = bytes.read(offset)?;
         let max_y: i32 = bytes.read(offset)?;
         let max_z: i16 = bytes.read(offset)?;
+
         let map_x: i32 = bytes.read(offset)?;
         let map_y: i32 = bytes.read(offset)?;
         let rects: u16 = bytes.read(offset)?;
@@ -54,8 +55,21 @@ impl<'a> TryRead<'a> for MapChunk {
                         let group_id: i32 = bytes.read(offset)?;
                         let _occluder: bool = bytes.read(offset)?;
                         let element_id = bytes.read(offset)?;
-                        let colors: Colors = bytes.read_with(offset, typ)?;
-                        let color = colors.get(0);
+                        // println!("BEFORE read_with");
+
+                        // println!("LEN = {}; current = {}!", bytes.len(), *offset);
+                        let color;
+                        if bytes.len() == *offset {
+                            let mut table = Vec::with_capacity(1 as usize);
+                            let size = size_from_tag(typ);
+                            println!("SIZE = {};", size);
+                            let data: &[u8] = &[0; 0];
+                            table.push(Cow::Borrowed(data));
+                            color = Colors { table }.get(0);
+                        } else {
+                            let colors: Colors = bytes.read_with(offset, typ)?;
+                            color = colors.get(0);
+                        }
                         let element = MapSprite {
                             cell_x,
                             cell_y,
@@ -115,13 +129,15 @@ impl<'a> Colors<'a> {
 impl<'a> TryRead<'a, u8> for Colors<'a> {
     fn try_read(bytes: &'a [u8], _ctx: u8) -> byte::Result<(Self, usize)> {
         let offset = &mut 0;
+        // println!("INSIDE try_read");
 
         let count: u8 = 1;
         let mut table = Vec::with_capacity(count as usize);
         // for _ in 0..count as usize {
             let size = size_from_tag(_ctx);
-            let bytes = bytes.read_with(offset, Bytes::Len(size))?;
-            table.push(Cow::Borrowed(bytes));
+        let data= bytes.read_with(offset, Bytes::Len(size))?;
+
+        table.push(Cow::Borrowed(data));
         // }
         Ok((Colors { table }, *offset))
     }

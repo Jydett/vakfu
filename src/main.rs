@@ -1,3 +1,4 @@
+use std::env;
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -21,6 +22,9 @@ mod map;
 mod systems;
 
 fn main() -> Result<()> {
+
+    env::set_var("RUST_BACKTRACE", "1");
+
     let mut pargs = Arguments::from_env();
     let game_path: PathBuf = pargs.value_from_str("--path")?;
     let map: i32 = pargs.value_from_str("--map")?;

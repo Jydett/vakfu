@@ -33,6 +33,7 @@ impl Map {
                 .trim_matches(|c| char::is_numeric(c) || c == '-')
                 == "_"
             {
+                println!("opning {}", file.name());
                 let mut buffer = Vec::with_capacity(file.size() as usize);
                 file.read_to_end(&mut buffer)?;
                 let chunk = buffer
