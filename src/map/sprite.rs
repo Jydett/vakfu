@@ -10,7 +10,7 @@ pub struct MapSprite {
     pub cell_z: i16,
     pub height: u8,
     pub altitude_order: u8,
-    pub tag: u8,
+    // pub tag: u8,
     pub element_id: i32,
     pub group_key: i32,
     pub group_id: i32,

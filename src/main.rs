@@ -22,7 +22,6 @@ mod systems;
 
 fn main() -> Result<()> {
     let mut pargs = Arguments::from_env();
-
     let game_path: PathBuf = pargs.value_from_str("--path")?;
     let map: i32 = pargs.value_from_str("--map")?;
 
@@ -30,6 +29,10 @@ fn main() -> Result<()> {
     let gfx_path = maps_path.join("gfx.jar");
     let map_path = maps_path.join("gfx").join(format!("{}.jar", map));
     let lib_path = maps_path.join("data.jar");
+
+    println!("gfx_path is {}\n", gfx_path.display());
+    println!("map_path is {}\n", map_path.display());
+    println!("lib_path is {}\n", lib_path.display());
 
     let map = Map::load(File::open(map_path)?)?;
     let lib = ElementLibrary::load(File::open(lib_path)?)?;

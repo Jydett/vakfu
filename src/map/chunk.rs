@@ -29,17 +29,6 @@ impl<'a> TryRead<'a> for MapChunk {
         let max_x: i32 = bytes.read(offset)?;
         let max_y: i32 = bytes.read(offset)?;
         let max_z: i16 = bytes.read(offset)?;
-        let count: u16 = bytes.read(offset)?;
-        let mut group_keys: Vec<i32> = Vec::with_capacity(count as usize);
-        let mut layer_indexes: Vec<u8> = Vec::with_capacity(count as usize);
-        let mut group_ids: Vec<i32> = Vec::with_capacity(count as usize);
-
-        for _ in 0..count as usize {
-            group_keys.push(bytes.read(offset)?);
-            layer_indexes.push(bytes.read(offset)?);
-            group_ids.push(bytes.read(offset)?);
-        }
-        let colors: Colors = bytes.read(offset)?;
         let map_x: i32 = bytes.read(offset)?;
         let map_y: i32 = bytes.read(offset)?;
         let rects: u16 = bytes.read(offset)?;
@@ -55,24 +44,25 @@ impl<'a> TryRead<'a> for MapChunk {
                 for cell_y in rect_min_y..rect_max_y {
                     let count: u8 = bytes.read(offset)?;
                     for _ in 0..count {
+                        let typ: u8 = bytes.read(offset)?;
                         let cell_z = bytes.read(offset)?;
                         let height = bytes.read(offset)?;
                         let altitude_order = bytes.read(offset)?;
-                        let tag = bytes.read(offset)?;
+                        // let tag = bytes.read(offset)?;
+                        let group_key: i32 = bytes.read(offset)?;
+                        let layer: u8 = bytes.read(offset)?;
+                        let group_id: i32 = bytes.read(offset)?;
+                        let _occluder: bool = bytes.read(offset)?;
                         let element_id = bytes.read(offset)?;
-                        let group_idx: u16 = bytes.read(offset)?;
-                        let group_key = group_keys[group_idx as usize];
-                        let group_id = group_ids[group_idx as usize];
-                        let layer = layer_indexes[group_idx as usize];
-                        let color_idx: u16 = bytes.read(offset)?;
-                        let color = colors.get(color_idx);
+                        let colors: Colors = bytes.read_with(offset, typ)?;
+                        let color = colors.get(0);
                         let element = MapSprite {
                             cell_x,
                             cell_y,
                             cell_z,
                             height,
                             altitude_order,
-                            tag,
+                            // tag,
                             element_id,
                             group_key,
                             group_id,
@@ -122,26 +112,29 @@ impl<'a> Colors<'a> {
     }
 }
 
-impl<'a> TryRead<'a> for Colors<'a> {
-    fn try_read(bytes: &'a [u8], _ctx: ()) -> byte::Result<(Self, usize)> {
+impl<'a> TryRead<'a, u8> for Colors<'a> {
+    fn try_read(bytes: &'a [u8], _ctx: u8) -> byte::Result<(Self, usize)> {
         let offset = &mut 0;
 
-        let count: u16 = bytes.read(offset)?;
+        let count: u8 = 1;
         let mut table = Vec::with_capacity(count as usize);
-        for _ in 0..count as usize {
-            let size = size_from_tag(bytes.read(offset)?);
+        // for _ in 0..count as usize {
+            let size = size_from_tag(_ctx);
             let bytes = bytes.read_with(offset, Bytes::Len(size))?;
-            table.push(Cow::Borrowed(bytes))
-        }
+            table.push(Cow::Borrowed(bytes));
+        // }
         Ok((Colors { table }, *offset))
     }
 }
 
 fn size_from_tag(tag: u8) -> usize {
-    let a = if tag & 0x1 == 0x1 { 3 } else { 0 };
-    let b = if tag & 0x2 == 0x2 { 1 } else { 0 };
-    let c = if tag & 0x4 == 0x4 { 2 } else { 1 };
-    (a + b) * c
+    let mut n2 = 0;
+    if (tag & 2) == 2 { n2 += 3 };
+    if (tag & 8) == 8 {n2 += 1 };
+    if (tag & 0x10) == 16 { n2 *= 2 };
+    if (tag & 1) == 1 { n2 += 3 };
+    if (tag & 4) == 4 { n2 += 3 };
+    n2
 }
 
 #[inline]

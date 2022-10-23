@@ -37,7 +37,7 @@ impl Map {
                 file.read_to_end(&mut buffer)?;
                 let chunk = buffer
                     .read(&mut 0)
-                    .map_err(|err| anyhow!("Read error: {:?}", err))?;
+                    .map_err(|err| anyhow!("Map > read error: {:?}", err))?;
                 chunks.push(chunk);
             }
         }

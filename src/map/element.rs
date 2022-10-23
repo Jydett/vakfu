@@ -20,7 +20,7 @@ pub struct MapElement {
     pub flags: ElementFlags,
     pub visual_height: u8,
     pub visibility_mask: u8,
-    pub export_mask: u8,
+//   pub export_mask: u8,
     pub shader: u8,
     pub animation: Option<Frames>,
     pub ground_sound: u8,
@@ -66,7 +66,7 @@ impl<'a> TryRead<'a> for MapElement {
         let flags: ElementFlags = bytes.read(offset)?;
         let visual_height: u8 = bytes.read(offset)?;
         let visibility_mask: u8 = bytes.read(offset)?;
-        let export_mask: u8 = bytes.read(offset)?;
+//         let export_mask: u8 = bytes.read(offset)?;
         let shader: u8 = bytes.read(offset)?;
         let frame_count: u8 = bytes.read(offset)?;
         let animation = if frame_count > 0 {
@@ -86,7 +86,7 @@ impl<'a> TryRead<'a> for MapElement {
             flags,
             visual_height,
             visibility_mask,
-            export_mask,
+// export_mask,
             shader,
             animation,
             ground_sound,
@@ -127,7 +127,7 @@ impl ElementLibrary {
 
         let result = bytes
             .read(&mut 0)
-            .map_err(|err| anyhow!("Read error: {:?}", err))?;
+            .map_err(|err| anyhow!("ElementLibrary > read error: {:?}", err))?;
         Ok(result)
     }
 
